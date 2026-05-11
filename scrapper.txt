@@ -1,0 +1,32 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+# Step 1: URL
+url = "https://webscraper.io/test-sites/e-commerce/static/computers/laptops"
+
+# Step 2: Get webpage
+page= requests.get(url)
+soup = BeautifulSoup(page.text, "html.parser")
+
+# Step 3: Find all products
+products = soup.find_all("div", class_="thumbnail")
+
+# Step 4: Store data
+data = []
+
+for p in products:
+    name = p.find("a", class_="title").text.strip()
+    price = p.find("h4", class_="price").text.strip()
+    rating = p.find("p", attrs={"data-rating": True})["data-rating"]
+    review = p.find("p", class_="description").text.strip()
+    
+    data.append([name, price, rating, review])
+
+# Step 5: Create DataFrame
+df = pd.DataFrame(data, columns=["Name", "Price", "Rating", "Review"])
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', 200)
+pd.set_option('display.max_colwidth', 40)
+# Step 6: Show result
+print(df.head(10))

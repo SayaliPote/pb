@@ -1,0 +1,120 @@
+  ass3
+
+Air
+
+# ==========================================
+# AIR QUALITY DATASET VISUALIZATION
+# 3 Matplotlib + 3 Seaborn Graphs
+# ==========================================
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Load dataset
+df = pd.read_csv(r"C:\Users\Lenovo\Downloads\DSBDA-PRACTICALS-zip\DSBDA-PRACTICALS\Group B\Assignment-6\AirQualityUCI.csv", sep=';')
+df.head()
+# Remove extra columns
+df = df.iloc[:, :-2]
+
+# Replace comma with dot
+df = df.replace(',', '.', regex=True)
+
+# Convert numeric columns
+for col in df.columns:
+    if col not in ['Date', 'Time']:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+
+
+
+# Remove missing values
+df.replace(-200, pd.NA, inplace=True)
+df.fillna(df.mean(numeric_only=True), inplace=True)
+
+print(df.head())
+# MATPLOTLIB GRAPHS
+# -------------------------------
+
+# 1. Histogram
+plt.hist(df["CO(GT)"], bins=10)
+plt.title("CO Level Distribution")
+plt.xlabel("CO(GT)")
+plt.ylabel("Count")
+plt.show()
+
+# 2. Boxplot
+plt.boxplot(df["CO(GT)"])
+plt.title("CO Level Boxplot")
+plt.ylabel("CO(GT)")
+plt.show()
+# 3. Line Plot
+plt.plot(df["CO(GT)"].head(50))
+plt.title("CO Levels")
+plt.xlabel("Index")
+plt.ylabel("CO(GT)")
+plt.show()
+# -------------------------------
+# SEABORN GRAPHS
+# -------------------------------
+
+sns.set_style("whitegrid")
+
+# 4. Histplot
+sns.histplot(df["T"], bins=10)
+plt.title("Temperature Distribution")
+plt.show()
+# 5. Scatterplot
+sns.scatterplot(x="CO(GT)", y="T", data=df)
+plt.title("CO vs Temperature")
+plt.show()
+# 6. Heatmap
+corr = df[['CO(GT)','PT08.S1(CO)','NMHC(GT)','C6H6(GT)','T','RH']].corr()
+sns.heatmap(corr, annot=False)
+plt.title("Correlation Heatmap")
+plt.show()
+
+
+
+heart
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Load dataset
+df = pd.read_csv(r"C:\Users\Lenovo\Downloads\heartdisease.csv",sep=',')
+
+print(df.head())
+# 1. Pie Chart
+df["AHD"].value_counts().plot.pie(autopct="%1.1f%%")
+plt.title("Heart Disease Percentage")
+plt.ylabel("")
+plt.show()
+# 2. Histogram
+plt.hist(df["Chol"], bins=10)
+plt.title("Cholesterol Distribution")
+plt.xlabel("Cholesterol")
+plt.ylabel("Count")
+plt.show()
+# 3. Boxplot
+plt.boxplot(df["Chol"])
+plt.title("Cholesterol Boxplot")
+plt.ylabel("Cholesterol")
+plt.show()
+# SEABORN GRAPHS
+# -------------------------------
+
+sns.set_style("whitegrid")
+
+# 4. Countplot
+sns.countplot(x="AHD", data=df)
+plt.title("Heart Disease Count")
+plt.show()
+
+# 5. Scatterplot
+sns.scatterplot(x="Age", y="MaxHR", hue="AHD", data=df)
+plt.title("Age vs Max Heart Rate")
+plt.show()
+# 6. Countplot
+sns.countplot(x="ChestPain", hue="AHD", data=df)
+plt.title("Chest Pain vs Heart Disease")
+plt.show()
+

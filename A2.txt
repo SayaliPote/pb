@@ -1,0 +1,120 @@
+Assignment 2 :
+Make 3 java files on notepad:- save as .java and all files
+
+SalesMapper.java
+
+package SalesCountry;
+
+import java.io.IOException;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.Mapper;
+
+public class SalesMapper extends Mapper<Object, Text, Text, IntWritable> {
+
+    private final static IntWritable one = new IntWritable(1);
+
+    public void map(Object key, Text value, Context context)
+            throws IOException, InterruptedException {
+
+        String data[] = value.toString().split(" ");
+
+        context.write(new Text(data[0]), one);
+    }
+}
+
+SalesCountryReducer
+
+package SalesCountry;
+import java.io.IOException;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.Reducer;
+
+public class SalesCountryReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+
+    public void reduce(Text key, Iterable<IntWritable> values, Context context)
+            throws IOException, InterruptedException {
+
+        int sum = 0;
+
+        for (IntWritable val : values) {
+            sum += val.get();
+        }
+
+        context.write(key, new IntWritable(sum));
+    }
+}
+
+SalesCountryDriver
+
+package SalesCountry;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class SalesCountryDriver {
+
+    public static void main(String args[]) throws Exception {
+
+        Configuration conf = new Configuration();
+
+        Job job = Job.getInstance(conf, "Login Time");
+
+        job.setJarByClass(SalesCountryDriver.class);
+
+        job.setMapperClass(SalesMapper.class);
+        job.setReducerClass(SalesCountryReducer.class);
+
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+
+
+
+now commands on ubuntu terminal:- 
+
+
+
+mkdir analyzelogs2
+cd ~/analyzelogs2
+cp /mnt/c/Users/prajv/Downloads/access_log_short.txt ~/analyzelogs2
+cp /mnt/c/Users/prajv/Downloads/SalesMapper.java ~/analyzelogs2
+cp /mnt/c/Users/prajv/Downloads/SalesCountryDriver.java ~/analyzelogs2
+cp /mnt/c/Users/prajv/Downloads/SalesCountryReducer.java ~/analyzelogs2
+ls
+mkdir SalesCountry
+ls
+export CLASSPATH="$HADOOP_HOME/share/hadoop/mapreduce/hadoop-mapreduce-client-core-*.jar:$HADOOP_HOME/share/hadoop/mapreduce/hadoop-mapreduce-client-common-*.jar:$HADOOP_HOME/share/hadoop/common/hadoop-common-*.jar:$HADOOP_HOME/lib/*"
+
+echo $CLASSPATH
+
+javac -classpath `hadoop classpath` -d . SalesMapper.java SalesCountryReducer.java SalesCountryDriver.java
+
+cd SalesCountry
+ls
+cd ~/analyzelogs2
+
+nano Manifest.txt 
+//:=> Main-Class: SalesCountry.SalesCountryDriver
+
+start-dfs.sh
+start-yarn.sh
+jps
+
+mkdir ~/input2000
+cp ~/analyzelogs2/access_log_short.txt ~/input20000
+hdfs dfs -mkdir /input20000
+
+jar -cfm analyzelogs2.jar Manifest.txt SalesCountry/*.class
+hdfs dfs -put ~/analyzelogs2/access_log_short.txt ~/input20000
+
+hadoop jar analyzelogs2.jar /input20000 /output20000
+hdfs dfs -cat /output20000/part-r-00000

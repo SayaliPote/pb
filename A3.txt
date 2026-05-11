@@ -1,0 +1,112 @@
+-- =========================
+-- 1. DATABASE
+-- =========================
+
+CREATE DATABASE flightdb;
+
+USE flightdb;
+
+
+-- =========================
+-- 2. TABLE 1: FLIGHTS
+-- =========================
+
+CREATE EXTERNAL TABLE flights (
+  year INT,
+  month INT,
+  day INT,
+  carrier STRING,
+  flight_num INT,
+  origin STRING,
+  dest STRING,
+  arr_delay INT,
+  dep_delay INT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/user/hive/warehouse/flights';
+
+
+INSERT INTO flights VALUES
+(2008,1,1,'AA',101,'JFK','LAX',10,5),
+(2008,1,2,'DL',102,'ATL','ORD',20,10),
+(2008,1,3,'UA',103,'SFO','SEA',5,2),
+(2008,1,4,'AI',104,'DEL','BOM',25,15),
+(2008,1,5,'SW',105,'LAS','PHX',8,4),
+(2008,1,6,'EM',106,'DXB','LHR',12,6);
+
+
+-- =========================
+-- 3. TABLE 2: CARRIERS
+-- =========================
+
+CREATE TABLE carriers (
+  carrier STRING,
+  airline_name STRING
+);
+
+INSERT INTO carriers VALUES
+('AA','American Airlines'),
+('DL','Delta Airlines'),
+('UA','United Airlines'),
+('AI','Air India'),
+('SW','Southwest Airlines'),
+('EM','Emirates');
+
+
+-- =========================
+-- 4. TABLE 3: AIRPORTS
+-- =========================
+
+CREATE TABLE airports (
+  airport_code STRING,
+  airport_name STRING,
+  city STRING
+);
+
+INSERT INTO airports VALUES
+('JFK','John F Kennedy','New York'),
+('LAX','Los Angeles Airport','Los Angeles'),
+('ATL','Atlanta Airport','Atlanta'),
+('DEL','Indira Gandhi Airport','Delhi'),
+('DXB','Dubai International','Dubai'),
+('LHR','Heathrow Airport','London');
+
+
+-- =========================
+-- 5. JOIN QUERY
+-- =========================
+
+SELECT f.flight_num,
+       f.origin,
+       f.dest,
+       c.airline_name
+FROM flights f
+JOIN carriers c
+ON f.carrier = c.carrier;
+
+
+-- =========================
+-- 6. AVERAGE DELAY
+-- =========================
+
+SELECT year,
+       month,
+       day,
+       AVG(dep_delay) AS avg_departure_delay
+FROM flights
+WHERE year = 2008
+GROUP BY year, month, day
+ORDER BY month, day;
+
+
+-- =========================
+-- 7. SHOW TABLES
+-- =========================
+
+SHOW TABLES;
+
+SELECT * FROM flights;
+SELECT * FROM carriers;
+SELECT * FROM airports;
