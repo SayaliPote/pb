@@ -1,353 +1,74 @@
 import pandas as pd
-
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report
 
-air = pd.read_csv("AirQuality.csv", sep=';', decimal=',')
+# Load Air Quality dataset
+air = pd.read_csv(r"C:\Users\Lenovo\OneDrive\Desktop\DSBDA codes\Group B\Assignment-5\AirQualityUCI.csv", sep=';', decimal=',')
 
 # Load Heart dataset
-
-heart = pd.read_csv("heart.csv")
+heart = pd.read_csv(r"C:\Users\Lenovo\OneDrive\Desktop\DSBDA codes\Group B\Assignment-5\heart.csv",sep=',')
 
 air.head()
-
 print("Air Dataset Info")
-
 air.info()
 
 print("\nHeart Dataset Info")
-
 heart.info()
-
-heart.head()
-
 # Replace invalid values (-200 in air dataset)
-
 air.replace(-200, np.nan, inplace=True)
 
 # Fill missing values
-
 air.fillna(air.mean(numeric_only=True), inplace=True)
 
 # Check missing values
-
 print("Air Missing Values:\n", air.isnull().sum())
 
 # Heart dataset cleaning
-
 heart.fillna(heart.mean(numeric_only=True), inplace=True)
 
 print("Heart Missing Values:\n", heart.isnull().sum())
-
 # Combine numerical columns of both datasets
-
 air_numeric = air.select_dtypes(include=[np.number])
 
-combined = pd.concat([heart, air_numeric], axis=1)
+combined = pd.concat([heart.reset_index(drop=True),
+                      air_numeric.reset_index(drop=True)], axis=1)
 
 combined.head()
-
 # Normalize heart dataset
+num_cols = heart.select_dtypes(include=np.number).columns
 
-heart_norm = (heart - heart.min()) / (heart.max() - heart.min())
-
-heart_norm.head()
-
+heart_norm = heart.copy()
+heart_norm[num_cols] = (heart[num_cols] - heart[num_cols].min()) / (heart[num_cols].max() - heart[num_cols].min())
+display(heart_norm.head())
 # Remove duplicates
-
+air.dropna(axis=1, how='all', inplace=True)
+air.drop_duplicates(inplace=True)
 heart.drop_duplicates(inplace=True)
 
 # Example correction: remove negative values if any
-
-heart['Chol'] = heart['Chol'].abs()
+heart['chol'] = heart['chol'].abs()
 
 heart.head()
-
 from sklearn.model_selection import train_test_split
-
 from sklearn.linear_model import LogisticRegression
-
 from sklearn.metrics import accuracy_score
 
 # Features and target
-
-X = heart.drop('AHD', axis=1)
-
-y = heart['AHD']
+X = heart_norm.drop('target', axis=1)
+y = heart_norm['target']
 
 # Split dataset
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,random_state=42)
 
 # Train model
-
 model = LogisticRegression(max_iter=1000)
-
 model.fit(X_train, y_train)
 
 # Predict
-
 y_pred = model.predict(X_test)
 
 # Accuracy
-
 accuracy = accuracy_score(y_test, y_pred)
-
 print("Model Accuracy:", accuracy)
 
-
-
-practical b2 reeya
-
-import pandas as pd
-
-import numpy as np
-
-import matplotlib.pyplot as plt
-
-air = pd.read_csv("AirQualityUCI.csv", sep=';')
-
-heart = pd.read_csv("heart.csv")
-
-air.head()
-
-heart.head()
-
-# DATA CLEANING
-
-# CHECK MISSING VALUES
-
-print(air.isnull().sum())
-
-
-
-# REMOVE MISSING VALUES
-
-air_cleaned = air.dropna()
-
-print(air_cleaned.shape)
-
-
-
-# REMOVE DUPLICATE ROWS
-
-air_cleaned = air_cleaned.drop_duplicates()
-
-
-
-# DATA CLEANING
-
-# CHECK MISSING VALUES
-
-print(heart.isnull().sum())
-
-
-
-# REMOVE MISSING VALUES
-
-heart_cleaned = heart.dropna()
-
-print(heart_cleaned.shape)
-
-
-
-# REMOVE DUPLICATE ROWS
-
-heart_cleaned = heart_cleaned.drop_duplicates()
-
-
-
-#fill missing values.
-
-air_cleaned = air.fillna(0)
-
-
-
-air_cleaned = air_cleaned.head(100)
-
-heart = heart.head(100)
-
-
-
-air_cleaned['ID'] = range(1, 101)
-
-heart['ID'] = range(1, 101)
-
-
-
-#Merge data
-
-merged_data = pd.merge(air_cleaned, heart, on='ID')
-
-merged_data.head()
-
-#Normalization
-
-merged_data['NMHC(GT)'] = merged_data['NMHC(GT)'].astype(int)
-
-
-
-merged_data['NMHC(GT)'] = (
-
-  merged_data['NMHC(GT)'] - merged_data['NMHC(GT)'].min()
-
-) / (
-
-  merged_data['NMHC(GT)'].max() - merged_data['NMHC(GT)'].min()
-
-)
-
-
-
-merged_data[['NMHC(GT)']].head()
-
-#Check Invalid Values
-
-print(merged_data['chol'].unique())
-
-
-
-#Replace Wrong Values
-
-merged_data['chol'] = merged_data['chol'].replace(-1, np.nan)
-
-
-
-#Fill Missing Values
-
-merged_data['chol'] = merged_data['chol'].fillna(
-
-  merged_data['chol'].mean()
-
-)
-
-#Check Invalid Values
-
-print(merged_data['PT08.S1(CO)'].unique())
-
-
-
-#Replace Wrong Values
-
-merged_data['PT08.S1(CO)'] = merged_data['PT08.S1(CO)'].replace(-1, np.nan)
-
-
-
-#Fill Missing Values
-
-merged_data['PT08.S1(CO)'] = merged_data['PT08.S1(CO)'].fillna(
-
-  merged_data['PT08.S1(CO)'].mean()
-
-)
-
-heart = pd.read_csv("heart.csv")
-
-from sklearn.model_selection import train_test_split
-
-from sklearn.linear_model import LogisticRegression
-
-from sklearn.metrics import accuracy_score
-
-
-
-# Features and target
-
-X = heart.drop('target', axis=1)
-
-y = heart['target']
-
-
-
-# Split dataset
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-
-
-
-# Train model
-
-model = LogisticRegression(max_iter=1000)
-
-model.fit(X_train, y_train)
-
-
-
-# Predict
-
-y_pred = model.predict(X_test)
-
-
-
-# Accuracy
-
-accuracy = accuracy_score(y_test, y_pred)
-
-print("Model Accuracy:", accuracy)
-
-# Assistant
-
-from sklearn.model_selection import train_test_split
-
-from sklearn.linear_model import LinearRegression
-
-from sklearn.metrics import r2_score
-
-from sklearn.impute import SimpleImputer # Import imputer to handle missing values
-
-import numpy as np
-
-
-
-# Features and target
-
-X = air_numeric.drop('PT08.S1(CO)', axis=1)
-
-y = air_numeric['PT08.S1(CO)']
-
-
-
-# Handle missing values by imputing with mean values
-
-imputer = SimpleImputer(strategy='mean') # You can also use 'median' or 'most_frequent'
-
-X_imputed = imputer.fit_transform(X)
-
-
-
-# Also handle missing values in target variable if any
-
-y_imputed = y.fillna(y.mean()) # Fill NaN values in target with mean
-
-
-
-# Split dataset
-
-X_train, X_test, y_train, y_test = train_test_split(
-
-  X_imputed, y_imputed, # Use imputed data instead of original data
-
-  test_size=0.2
-
-)
-
-
-
-# Train model
-
-model = LinearRegression()
-
-model.fit(X_train, y_train)
-
-
-
-# Predict
-
-y_pred = model.predict(X_test)
-
-
-
-# Accuracy
-
-accuracy = r2_score(y_test, y_pred)
-
-print("Model Accuracy:", accuracy)
